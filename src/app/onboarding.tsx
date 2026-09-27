@@ -9,7 +9,6 @@ import { IconCircle } from '@/components/ui/icon-circle';
 import { TextField } from '@/components/ui/text-field';
 import { CategoryColors, Radius, Spacing } from '@/constants/theme';
 import { useDb } from '@/db/provider';
-import { completeOnboarding } from '@/db/users';
 import { createHabit } from '@/db/habits';
 import { todayKey } from '@/lib/date';
 import { useTheme } from '@/hooks/use-theme';
@@ -17,7 +16,7 @@ import { GOALS, STARTER_HABITS, type Goal } from '@/lib/starter-habits';
 
 export default function OnboardingScreen() {
   const db = useDb();
-  const { user, refreshUser } = useAuth();
+  const { user, completeOnboarding } = useAuth();
   const theme = useTheme();
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState(user?.name ?? '');
@@ -58,8 +57,7 @@ export default function OnboardingScreen() {
         startDate,
       });
     }
-    await completeOnboarding(db, user.id, { name: name.trim() || user.name, goal });
-    await refreshUser();
+    await completeOnboarding({ name: name.trim() || user.name, goal });
     setSubmitting(false);
     // Stack.Protected in root _layout.tsx switches to (app) automatically once onboardingComplete is true.
   }

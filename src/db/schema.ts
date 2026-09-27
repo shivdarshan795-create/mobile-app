@@ -10,17 +10,6 @@ export async function migrateDatabase(db: SQLiteDatabase) {
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
 
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY NOT NULL,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        passwordHash TEXT NOT NULL,
-        goal TEXT,
-        onboardingComplete INTEGER NOT NULL DEFAULT 0,
-        weekStartsOn TEXT NOT NULL DEFAULT 'monday',
-        createdAt TEXT NOT NULL
-      );
-
       CREATE TABLE IF NOT EXISTS habits (
         id TEXT PRIMARY KEY NOT NULL,
         userId TEXT NOT NULL,

@@ -13,7 +13,6 @@ import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { useDb } from '@/db/provider';
 import { resetUserData } from '@/db/reset';
-import { updateWeekStart } from '@/db/users';
 import { useProfileStats } from '@/hooks/use-profile-stats';
 import { useRewards } from '@/hooks/use-rewards';
 import { useTheme } from '@/hooks/use-theme';
@@ -21,7 +20,7 @@ import { useThemePreference, type ThemePreference } from '@/hooks/use-theme-pref
 import { seedDemoData } from '@/lib/seed';
 
 export default function ProfileScreen() {
-  const { user, signOut, resetPassword, refreshUser } = useAuth();
+  const { user, signOut, updatePassword, updateWeekStart } = useAuth();
   const db = useDb();
   const theme = useTheme();
   const { preference, setPreference } = useThemePreference();
@@ -52,7 +51,7 @@ export default function ProfileScreen() {
   async function handleChangePassword() {
     if (!user || newPassword.length < 6) return;
     setBusy(true);
-    const result = await resetPassword({ email: user.email, newPassword });
+    const result = await updatePassword(newPassword);
     setBusy(false);
     setPasswordMessage(result.success ? 'Password updated.' : result.error);
     if (result.success) setNewPassword('');
@@ -75,9 +74,7 @@ export default function ProfileScreen() {
   }
 
   async function handleWeekStartChange(value: 'monday' | 'sunday') {
-    if (!user) return;
-    await updateWeekStart(db, user.id, value);
-    await refreshUser();
+    await updateWeekStart(value);
   }
 
   function handleResetData() {

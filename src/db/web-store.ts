@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import type { AchievementRow, HabitEntryRow, HabitRow, RewardTransactionRow, UserRow } from './types';
+import type { AchievementRow, HabitEntryRow, HabitRow, RewardTransactionRow } from './types';
 
 /**
  * Web-only stand-in for the SQLite database (see README note in provider.web.tsx for why).
@@ -9,7 +9,6 @@ import type { AchievementRow, HabitEntryRow, HabitRow, RewardTransactionRow, Use
  * file does its own filtering/sorting in JS instead of SQL.
  */
 type Tables = {
-  users: UserRow[];
   habits: HabitRow[];
   habit_entries: HabitEntryRow[];
   reward_transactions: RewardTransactionRow[];
@@ -19,7 +18,7 @@ type Tables = {
 const STORAGE_KEY = 'habit-tracker-web-db-v1';
 
 function emptyTables(): Tables {
-  return { users: [], habits: [], habit_entries: [], reward_transactions: [], achievements: [] };
+  return { habits: [], habit_entries: [], reward_transactions: [], achievements: [] };
 }
 
 let cache: Tables | null = null;

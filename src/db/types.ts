@@ -4,19 +4,6 @@ export type TimeOfDay = 'morning' | 'afternoon' | 'evening' | 'anytime';
 export type HabitStatus = 'active' | 'paused' | 'archived';
 export type HabitCategory = 'health' | 'fitness' | 'mind' | 'learning' | 'productivity' | 'personal';
 
-export type WeekStart = 'monday' | 'sunday';
-
-export type UserRow = {
-  id: string;
-  name: string;
-  email: string;
-  passwordHash: string;
-  goal: string | null;
-  onboardingComplete: number;
-  weekStartsOn: WeekStart;
-  createdAt: string;
-};
-
 export type HabitRow = {
   id: string;
   userId: string;
@@ -69,8 +56,4 @@ export type AchievementRow = {
 
 export type Habit = Omit<HabitRow, 'weekdays'> & {
   weekdays: number[] | null;
-};
-
-export type User = Omit<UserRow, 'passwordHash' | 'onboardingComplete'> & {
-  onboardingComplete: boolean;
 };

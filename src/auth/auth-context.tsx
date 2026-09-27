@@ -1,9 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
-import { useDb } from '@/db/provider';
-import type { User } from '@/db/types';
-import { createLocalAuthService } from './local-auth-service';
-import type { AuthResult } from './types';
+import { createSupabaseAuthService } from './supabase-auth-service';
+import type { ActionResult, AuthResult, User, WeekStart } from './types';
 
 type AuthContextValue = {
   user: User | null;
@@ -11,15 +9,18 @@ type AuthContextValue = {
   signUp: (params: { name: string; email: string; password: string }) => Promise<AuthResult>;
   signIn: (params: { email: string; password: string }) => Promise<AuthResult>;
   signOut: () => Promise<void>;
-  resetPassword: (params: { email: string; newPassword: string }) => Promise<AuthResult>;
-  refreshUser: () => Promise<void>;
+  sendPasswordResetEmail: (email: string) => Promise<ActionResult>;
+  updatePassword: (newPassword: string) => Promise<ActionResult>;
+  completeOnboarding: (params: { name: string; goal: string }) => Promise<AuthResult>;
+  updateWeekStart: (weekStartsOn: WeekStart) => Promise<AuthResult>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Stateless (holds no per-render state of its own), safe as a module-level singleton.
+const service = createSupabaseAuthService();
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const db = useDb();
-  const service = useMemo(() => createLocalAuthService(db), [db]);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,7 +29,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(sessionUser);
       setIsLoading(false);
     });
-  }, [service]);
+
+    // Keeps context in sync with token refresh / sign-out happening outside this provider's own calls.
+    return service.onChange((nextUser) => setUser(nextUser));
+  }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -48,14 +52,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await service.signOut();
         setUser(null);
       },
-      async resetPassword(params) {
-        return service.resetPassword(params);
+      sendPasswordResetEmail: (email) => service.sendPasswordResetEmail(email),
+      updatePassword: (newPassword) => service.updatePassword(newPassword),
+      async completeOnboarding(params) {
+        const result = await service.completeOnboarding(params);
+        if (result.success) setUser(result.user);
+        return result;
       },
-      async refreshUser() {
-        setUser(await service.getSession());
+      async updateWeekStart(weekStartsOn) {
+        const result = await service.updateWeekStart(weekStartsOn);
+        if (result.success) setUser(result.user);
+        return result;
       },
     }),
-    [service, user, isLoading]
+    [user, isLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

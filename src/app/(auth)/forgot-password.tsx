@@ -10,32 +10,32 @@ import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 
 export default function ForgotPasswordScreen() {
-  const { resetPassword } = useAuth();
+  const { sendPasswordResetEmail } = useAuth();
   const [email, setEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+  const [sent, setSent] = useState(false);
 
   async function handleSubmit() {
     setError(undefined);
     setLoading(true);
-    const result = await resetPassword({ email, newPassword });
+    const result = await sendPasswordResetEmail(email);
     setLoading(false);
     if (!result.success) setError(result.error);
-    else setDone(true);
+    else setSent(true);
   }
 
-  if (done) {
+  if (sent) {
     return (
       <AuthScreen>
         <View style={{ gap: Spacing.two, alignItems: 'center' }}>
-          <ThemedText style={{ fontSize: 32 }}>✅</ThemedText>
+          <ThemedText style={{ fontSize: 32 }}>📬</ThemedText>
           <ThemedText type="heading" style={{ textAlign: 'center' }}>
-            Password updated
+            Check your email
           </ThemedText>
           <ThemedText themeColor="textSecondary" style={{ textAlign: 'center' }}>
-            You can log in with your new password now.
+            We sent a password reset link to {email}. Open it to set a new password, then come back
+            and log in.
           </ThemedText>
         </View>
         <Button label="Back to log in" onPress={() => router.replace('/(auth)/log-in')} />
@@ -48,8 +48,7 @@ export default function ForgotPasswordScreen() {
       <View style={{ gap: Spacing.one }}>
         <ThemedText type="title">Reset password</ThemedText>
         <ThemedText themeColor="textSecondary">
-          This app runs fully offline, so there&apos;s no email to send — confirm your account email
-          and choose a new password directly.
+          Enter your account email and we&apos;ll send you a link to set a new password.
         </ThemedText>
       </View>
 
@@ -62,16 +61,9 @@ export default function ForgotPasswordScreen() {
           autoCorrect={false}
           keyboardType="email-address"
           placeholder="you@example.com"
-        />
-        <TextField
-          label="New password"
-          value={newPassword}
-          onChangeText={setNewPassword}
-          secureTextEntry
-          placeholder="At least 6 characters"
           error={error}
         />
-        <Button label="Update password" onPress={handleSubmit} loading={loading} disabled={!email || !newPassword} />
+        <Button label="Send reset link" onPress={handleSubmit} loading={loading} disabled={!email} />
       </View>
     </AuthScreen>
   );
